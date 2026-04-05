@@ -1,0 +1,13 @@
+# API Manager Auto-Discovery
+api:
+  autodiscovery:
+    id: ''
+    
+# SMTP
+smtp:
+  host: 'smtp.gmail.com'
+  port: '465'
+
+# Debug Category
+debug:
+  category: 'com.org-smtp.category'

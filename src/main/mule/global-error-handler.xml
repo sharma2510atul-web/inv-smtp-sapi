@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<error-handler name="global-error-handler" doc:id="09c980be-47cc-4aaf-b1a8-41850f588656" > 
+	<on-error-propagate type="APIKIT:BAD_REQUEST" doc:name="on-error-propagate">
+			<set-variable value="400" doc:name="Set Variable httpStatus" doc:id="cbd3cf40-f1a3-4734-80c3-925531c394d5" variableName="httpStatus"/>
+			<flow-ref doc:name="error-response-subFlow" doc:id="09593b85-3408-4c13-bd83-bd3a8d7dfa2b" name="error-response-sub-flow" />
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND" doc:name="on-error-propagate">
+			<set-variable value="404" doc:name="Set Variable httpStatus" doc:id="9efc5a4a-38a4-48c3-ae9b-2ddd91b7ddf3" variableName="httpStatus" />
+			<flow-ref doc:name="error-response-subFlow" doc:id="3afd1f23-fae8-44b5-bdae-4225b6bb868f" name="error-response-sub-flow" />
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED" doc:name="on-error-propagate">
+			<set-variable value="405" doc:name="Set Variable httpStatus" doc:id="915f5d7d-a37f-4806-b105-b5c093b0b116" variableName="httpStatus" />
+			<flow-ref doc:name="error-response-subFlow" doc:id="8c3837c7-5fad-4b12-b40e-680074817b41" name="error-response-sub-flow" />
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE" doc:name="on-error-propagate">
+			<set-variable value="405" doc:name="Set Variable httpStatus" doc:id="5625e941-1c6f-448a-8ae8-b1eb695f911a" variableName="httpStatus" />
+			<flow-ref doc:name="error-response-subFlow" doc:id="f2fed960-bf26-408d-a9af-c411984402e1" name="error-response-sub-flow" />
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE" doc:name="on-error-propagate">
+			<set-variable value="415" doc:name="Set Variable httpStatus" doc:id="f8660600-9622-472a-aef3-beb833c8e666" variableName="httpStatus" />
+			<flow-ref doc:name="error-response-subFlow" doc:id="5dfd00d2-cf63-451a-b897-38d75e5ef691" name="error-response-sub-flow" />
+            
+</on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED" doc:name="on-error-propagate">
+			<set-variable value="501" doc:name="Set Variable httpStatus" doc:id="3458826f-68d3-4321-bab1-9365797fda80" variableName="httpStatus" />
+			<flow-ref doc:name="error-response-subFlow" doc:id="9d92424c-682e-4d9f-b721-c58bad4bbc7b" name="error-response-sub-flow" />
+            
+</on-error-propagate>
+<on-error-propagate type="ANY" doc:name="on-error-propagate" enableNotifications="true" logException="true">
+			<set-variable value="500" doc:name="Set Variable httpStatus" doc:id="1b3bc1a2-4747-443d-8a17-7be211324447" variableName="httpStatus" />
+			<flow-ref doc:name="error-response-subFlow" doc:id="7042de12-978b-4915-9ed7-0efb9b797991" name="error-response-sub-flow" />
+            
+</on-error-propagate>
+            </error-handler>
+            <sub-flow name="error-response-sub-flow"
+		doc:id="c86544f0-e0cc-41ce-b473-b403d867b9c3">
+		<ee:transform doc:name="DW Set Error Response"
+			doc:id="2a06fd65-5921-4e2a-bfaa-817ed0b7c225">
+			<ee:message>
+				<ee:set-payload resource="dwl/msg-global-error-response.dwl" />
+			
+
+</ee:message>
+			<ee:variables >
+			</ee:variables>
+		
+</ee:transform>
+	</sub-flow>
+</mule>

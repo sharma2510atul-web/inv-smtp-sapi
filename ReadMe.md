@@ -1,1 +1,0 @@
-This app will send failed records as error notifications

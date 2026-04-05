@@ -1,0 +1,12 @@
+# Environment-agnostic properties
+
+http:
+  host: '0.0.0.0'
+  port: '8081'
+  readTimeout: '60000'
+  idleTimeout: '30000'
+
+application:
+  name: 'inv-smtp-sapi'
+  version: 'v1'
+  
