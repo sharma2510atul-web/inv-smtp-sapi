@@ -11,9 +11,10 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<email:send doc:id="5e716ac2-d5c7-4550-b828-91bf20f93cf6" config-ref="Email_SMTP" fromAddress="errornotifier@gmail.com" subject='#[payload.emailSubject]' doc:name="Send Email with Failed Record details" toAddresses='#[splitBy(payload.emailAddress,",")]'>
 			<email:body>
 				<email:content><![CDATA[#[%dw 2.0
+import * from dw::core::Binaries
 output text/plain
 ---
-payload.emailMessage]]]></email:content>
+fromBase64(payload.emailMessage)]]]></email:content>
 			</email:body>
 		</email:send>
 		<ee:transform doc:name="Response Payload" doc:id="32739c57-95e7-4397-988c-d10f9496344d" >

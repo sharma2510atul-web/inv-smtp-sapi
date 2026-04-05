@@ -4,7 +4,7 @@
 
 	<groupId>dbe2a955-f10c-47c6-bcc3-43b50b56693f</groupId>
 	<artifactId>inventory-smtp-sys-api</artifactId>
-	<version>1.0.5</version>
+	<version>1.0.6</version>
 	<packaging>mule-application</packaging>
 	<name>inventory-smtp-sapi</name>
 
@@ -15,11 +15,9 @@
 		<munit.version>3.2.1</munit.version>
 		<mule-secure-configuration-property-module.version>1.2.7</mule-secure-configuration-property-module.version>
 		<assertions.version>1.2.1</assertions.version>
-		<http.connector.version>1.10.0</http.connector.version>
-		<validation.module.version>2.0.6</validation.module.version>
-		<apikit.module.version>1.11.0</apikit.module.version>
-		<mule.salesforce.connector.version>10.22.2</mule.salesforce.connector.version>
-		<raml.version>1.0.0</raml.version>
+		<http.connector.version>1.10.3</http.connector.version>
+		<apikit.module.version>1.11.5</apikit.module.version>
+		<raml.version>1.0.2</raml.version>
 	</properties>
 
 	<build>
@@ -180,7 +178,7 @@
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-http-connector</artifactId>
-			<version>1.10.3</version>
+			<version>${http.connector.version}</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
@@ -193,7 +191,7 @@
 		<dependency>
 			<groupId>org.mule.modules</groupId>
 			<artifactId>mule-apikit-module</artifactId>
-			<version>1.11.5</version>
+			<version>${apikit.module.version}</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
@@ -212,7 +210,7 @@
 		<dependency>
 			<groupId>dbe2a955-f10c-47c6-bcc3-43b50b56693f</groupId>
 			<artifactId>inv-smtp-sapi</artifactId>
-			<version>1.0.2</version>
+			<version>${raml.version}</version>
 			<classifier>raml</classifier>
 			<type>zip</type>
 		</dependency>
