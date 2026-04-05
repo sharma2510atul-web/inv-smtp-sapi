@@ -11,6 +11,9 @@ env:
   CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
   BUSINESS_GROUP_ID: ${{secrets.BUSINESS_GROUP_ID}}
   ENCRYPTION_KEY: ${{secrets.ENCRYPTION_KEY}}
+  CRED_CLIENT_ID: ${{secrets.CRED_CLIENT_ID}}
+  CRED_CLIENT_SECRET: ${{secrets.CRED_CLIENT_SECRET}}
+  
 jobs:
   BuildAndDeploy:
     runs-on: ubuntu-latest
@@ -32,7 +35,7 @@ jobs:
       run: mvn -version
     
     - name: Deploy to Exchange
-      run: mvn clean deploy -s settings.xml -Dmule.env=dev -Dmule.key=$ENCRYPTION_KEY  -DCLIENT_ID=$CLIENT_ID -DCLIENT_SECRET=$CLIENT_SECRET -Denvironment=Sandbox -Dreplicas=1 -DvCores=0.1 -DmuleVersion=4.9.2 -DbusinessGroupId=$BUSINESS_GROUP_ID -DskipTests
+      run: mvn clean deploy -s settings.xml -DskipTests
       
     - name: Deploy to Runtime
-      run: mvn clean deploy -DmuleDeploy -s settings.xml -Dmule.env=dev -Dmule.key=$ENCRYPTION_KEY  -DCLIENT_ID=$CLIENT_ID -DCLIENT_SECRET=$CLIENT_SECRET -Denvironment=Sandbox -Dreplicas=1 -DvCores=0.1 -DmuleVersion=4.9.2 -DbusinessGroupId=$BUSINESS_GROUP_ID -DskipTests 
+      run: mvn clean deploy -DmuleDeploy -s settings.xml -Dmule.env=dev -Dmule.key=$ENCRYPTION_KEY  -DCLIENT_ID=$CLIENT_ID -DCLIENT_SECRET=$CLIENT_SECRET -Denvironment=Sandbox -Dreplicas=1 -DvCores=0.1 -DmuleVersion=4.9.2 -DbusinessGroupId=$BUSINESS_GROUP_ID -Danypoint.platform.CLIENT_ID=$CRED_CLIENT_ID -Danypoint.platform.CLIENT_SECRET=$CRED_CLIENT_SECRET -DskipTests 
