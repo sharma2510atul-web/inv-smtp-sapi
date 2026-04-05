@@ -4,7 +4,7 @@
 
 	<groupId>dbe2a955-f10c-47c6-bcc3-43b50b56693f</groupId>
 	<artifactId>inventory-smtp-sys-api</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 	<packaging>mule-application</packaging>
 	<name>inventory-smtp-sapi</name>
 
@@ -69,6 +69,8 @@
 						</deploymentSettings>
 						<secureProperties>
 							<mule.key>${mule.key}</mule.key>
+							<anypoint.platform.client_id>${anypoint.platform.CLIENT_ID}</anypoint.platform.client_id>
+							<anypoint.platform.client_secret>${anypoint.platform.CLIENT_SECRET}</anypoint.platform.client_secret>
 						</secureProperties>
 					</cloudhub2Deployment>
 					<classifier>mule-application</classifier>

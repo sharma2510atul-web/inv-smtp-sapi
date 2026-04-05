@@ -11,6 +11,8 @@ env:
   CLIENT_SECRET: ${{ secrets.PROD_CLIENT_SECRET }}
   BUSINESS_GROUP_ID: ${{secrets.BUSINESS_GROUP_ID}}
   ENCRYPTION_KEY: ${{secrets.PROD_ENCRYPTION_KEY}}
+  CRED_CLIENT_ID: ${{secrets.PROD_CRED_CLIENT_ID}}
+  CRED_CLIENT_SECRET: ${{secrets.CRED_CLIENT_SECRET}}
 
 jobs:
   BuildAndDeploy:
@@ -34,4 +36,4 @@ jobs:
       run: mvn -version
     
     - name: Deploy to Runtime
-      run: mvn clean deploy -DmuleDeploy -s settings.xml -Dmule.env=prod -Dmule.key=$ENCRYPTION_KEY  -DCLIENT_ID=$CLIENT_ID -DCLIENT_SECRET=$CLIENT_SECRET -Denvironment=Production -Dreplicas=1 -DvCores=0.1 -DmuleVersion=4.9.2 -DbusinessGroupId=$BUSINESS_GROUP_ID -DskipTests 
+      run: mvn clean deploy -DmuleDeploy -s settings.xml -Dmule.env=prod -Dmule.key=$ENCRYPTION_KEY  -DCLIENT_ID=$CLIENT_ID -DCLIENT_SECRET=$CLIENT_SECRET -Denvironment=Production -Dreplicas=1 -DvCores=0.1 -DmuleVersion=4.9.2 -DbusinessGroupId=$BUSINESS_GROUP_ID -Danypoint.platform.CLIENT_ID=$CRED_CLIENT_ID -Danypoint.platform.CLIENT_SECRET=$CRED_CLIENT_SECRET -DskipTests
