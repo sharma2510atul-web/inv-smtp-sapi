@@ -3,10 +3,10 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>dbe2a955-f10c-47c6-bcc3-43b50b56693f</groupId>
-	<artifactId>inv-smtp-sapi</artifactId>
-	<version>1.0.1</version>
+	<artifactId>inventory-smtp-sys-api</artifactId>
+	<version>1.0.0</version>
 	<packaging>mule-application</packaging>
-	<name>inv-smtp-sys-api</name>
+	<name>inventory-smtp-sapi</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -47,7 +47,7 @@
 						<connectedAppClientSecret>${CLIENT_SECRET}</connectedAppClientSecret>
 						<connectedAppGrantType>client_credentials</connectedAppGrantType>
 						<businessGroupId>${businessGroupId}</businessGroupId>
-						<applicationName>inv-smtp-sapi-${mule.env}</applicationName>
+						<applicationName>inventory-smtp-sapi-${mule.env}</applicationName>
 						<javaVersion>17</javaVersion>
 						<replicas>${replicas}</replicas>
 						<vCores>${vCores}</vCores>
