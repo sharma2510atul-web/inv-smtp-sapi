@@ -55,5 +55,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			</ee:variables>
 		
 </ee:transform>
-	</sub-flow>
+		<logger level="ERROR" doc:name="ERROR: Error Details" doc:id="157631b5-00a3-4a83-b6e7-1cd74973b180" message="#[payload]" />
+	
+</sub-flow>
 </mule>
