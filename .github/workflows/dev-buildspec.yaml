@@ -11,7 +11,6 @@ env:
   CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
   BUSINESS_GROUP_ID: ${{secrets.BUSINESS_GROUP_ID}}
   ENCRYPTION_KEY: ${{secrets.ENCRYPTION_KEY}}
-
 jobs:
   BuildAndDeploy:
     runs-on: ubuntu-latest
@@ -29,12 +28,16 @@ jobs:
         sudo mv apache-maven-3.8.6 /opt/maven
         echo "MAVEN_HOME=/opt/maven" >> $GITHUB_ENV
         echo "/opt/maven/bin" >> $GITHUB_PATH
-
     - name: Verify Maven Version
       run: mvn -version
     
     - name: Deploy to Exchange
+<<<<<<< HEAD
       run: mvn clean deploy -s settings.xml -Dmule.env=dev -Dmule.key=$ENCRYPTION_KEY  -DCLIENT_ID=$CLIENT_ID -DCLIENT_SECRET=$CLIENT_SECRET -Denvironment=Sandbox -Dreplicas=1 -DvCores=0.1 -DmuleVersion=4.9.2 -DbusinessGroupId=$BUSINESS_GROUP_ID -DskipTests
     
+=======
+      run: mvn clean deploy -s settings.xml -Dmule.env=dev -Dmule.key=$ENCRYPTION_KEY  -DCLIENT_ID=$CLIENT_ID -DCLIENT_SECRET=$CLIENT_SECRET -Denvironment=Sandbox -Dreplicas=1 -DvCores=0.1 -DmuleVersion=4.9.2 -DbusinessGroupId=$BUSINESS_GROUP_ID - DskipTests
+
+>>>>>>> 291932bd0341ba8492e6615cdd6195ba8b36f014
     - name: Deploy to Runtime
       run: mvn clean deploy -DmuleDeploy -s settings.xml -Dmule.env=dev -Dmule.key=$ENCRYPTION_KEY  -DCLIENT_ID=$CLIENT_ID -DCLIENT_SECRET=$CLIENT_SECRET -Denvironment=Sandbox -Dreplicas=1 -DvCores=0.1 -DmuleVersion=4.9.2 -DbusinessGroupId=$BUSINESS_GROUP_ID -DskipTests 
