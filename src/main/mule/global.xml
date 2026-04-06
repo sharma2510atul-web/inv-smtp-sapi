@@ -4,7 +4,7 @@ http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/m
     <http:listener-config name="inv-smtp-sapi-httpListenerConfig">
         <http:listener-connection host="${http.host}" port="${http.port}" readTimeout="${http.readTimeout}" connectionIdleTimeout="${http.idleTimeout}" />
     </http:listener-config>
-    <apikit:config name="inv-smtp-sapi-config" api="resource::dbe2a955-f10c-47c6-bcc3-43b50b56693f:inv-smtp-sapi:1.0.2:raml:zip:inv-smtp-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="inv-smtp-sapi-config" api="resource::dbe2a955-f10c-47c6-bcc3-43b50b56693f:inv-smtp-sapi:1.0.3:raml:zip:inv-smtp-sapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <configuration-properties doc:name="Configuration properties" doc:id="9d015d85-152c-471d-92cc-550b039460df" doc:description="Environment-agnostic properties" file="properties/common.yaml" />
     <configuration-properties doc:name="Configuration properties" doc:id="1d9c81de-790e-4832-b752-60c31f8d8215" file="properties/${mule.env}.yaml" doc:description="Environment-specific properties" />
     <secure-properties:config name="secure-properties-config" doc:name="Secure Properties Config" doc:id="9174e84d-c26a-4ac8-b9b7-e5ddec0ec37b" doc:description="Environment-specific secure properties" file="properties/secure/${mule.env}-secure.yaml" key="${mule.key}" />
