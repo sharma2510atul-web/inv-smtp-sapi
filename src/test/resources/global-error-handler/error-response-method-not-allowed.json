@@ -1,0 +1,10 @@
+{
+  "api": "inventory-smtp-sapi",
+  "env": "test",
+  "response": "Error",
+  "statusCode": 405,
+  "timestamp": "2024-04-06T18:42:00.000Z",
+  "correlationId": "test-correlation-id",
+  "errorType": "APIKIT:METHOD_NOT_ALLOWED",
+  "errorMessage": "Method not allowed"
+}

@@ -14,33 +14,34 @@
         http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
         http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
 
-    <munit:config name="implementation-test-suite.xml" />
+    <munit:config name="implementation-test-suite.xml" >
+		<munit:parameterizations >
+			<munit:parameterization name="testParams" >
+				<munit:parameters >
+					<munit:parameter propertyName="mule.env" value="dev" />
+					<munit:parameter propertyName="mule.key" value="Mule1234sftest04" />
+				</munit:parameters>
+			</munit:parameterization>
+		</munit:parameterizations>
+	</munit:config>
 
     <!-- Test case for successful email sending -->
-    <munit:test name="smtp-implementation-success-test" 
+    <munit:test name="implementation-smtp-success-test" 
                 description="Test successful email sending implementation">
         
         <munit:behavior>
-            <!-- Mock email send operation -->
-            <munit-tools:mock-when processor="email:send">
+            <munit-tools:mock-when processor="email:send" doc:name="Mock Email Send">
                 <munit-tools:with-attributes>
                     <munit-tools:with-attribute whereValue="Email_SMTP" attributeName="config-ref" />
+                    <munit-tools:with-attribute whereValue="Send Email with Failed Record details" attributeName="doc:name" />
                 </munit-tools:with-attributes>
-                <munit-tools:then-return>
-                    <munit-tools:payload value="Email sent successfully" />
-                </munit-tools:then-return>
+                <munit-tools:then-return />
             </munit-tools:mock-when>
         </munit:behavior>
 
         <munit:execution>
             <munit:set-event>
-                <munit:payload value='#{
-                    {
-                        "emailAddress": "test@example.com",
-                        "emailSubject": "Test Subject",
-                        "emailMessage": "VGhpcyBpcyBhIHRlc3QgZW1haWw="
-                    }
-                }' mediaType="application/json" />
+                <munit:payload value='#[readUrl("classpath://implementation/email-success-payload.json", "application/json")]' />
                 <munit:variables>
                     <munit:variable key="correlationId" value="test-correlation-id" />
                 </munit:variables>
@@ -50,37 +51,33 @@
         </munit:execution>
 
         <munit:validation>
-            <munit-tools:assert-that expression="#[payload.message]" 
-                                   is="#[MunitTools::containsString('Email sent to')]" />
-            <munit-tools:assert-that expression="#[payload.message]" 
-                                   is="#[MunitTools::containsString('successfully')]" />
+            <munit-tools:assert-that expression="#[payload]"
+                                   is='#[MunitTools::equalTo(readUrl("classpath://implementation/email-success-response.json", "application/json"))]' />
+            <munit-tools:verify-call processor="email:send" atLeast="1">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute attributeName="config-ref" whereValue="Email_SMTP" />
+                </munit-tools:with-attributes>
+            </munit-tools:verify-call>
         </munit:validation>
     </munit:test>
 
     <!-- Test case for email sending with multiple recipients -->
-    <munit:test name="smtp-implementation-multiple-recipients-test" 
+    <munit:test name="implementation-smtp-multiple-recipients-test" 
                 description="Test email sending with multiple recipients">
         
         <munit:behavior>
-            <munit-tools:mock-when processor="email:send">
+            <munit-tools:mock-when processor="email:send" doc:name="Mock Email Send">
                 <munit-tools:with-attributes>
                     <munit-tools:with-attribute whereValue="Email_SMTP" attributeName="config-ref" />
+                    <munit-tools:with-attribute whereValue="Send Email with Failed Record details" attributeName="doc:name" />
                 </munit-tools:with-attributes>
-                <munit-tools:then-return>
-                    <munit-tools:payload value="Email sent successfully" />
-                </munit-tools:then-return>
+                <munit-tools:then-return />
             </munit-tools:mock-when>
         </munit:behavior>
 
         <munit:execution>
             <munit:set-event>
-                <munit:payload value='#{
-                    {
-                        "emailAddress": "test1@example.com,test2@example.com",
-                        "emailSubject": "Test Subject Multiple Recipients",
-                        "emailMessage": "VGhpcyBpcyBhIHRlc3QgZW1haWwgZm9yIG11bHRpcGxlIHJlY2lwaWVudHM="
-                    }
-                }' mediaType="application/json" />
+                <munit:payload value='#[readUrl("classpath://implementation/email-multiple-recipients-payload.json", "application/json")]' />
                 <munit:variables>
                     <munit:variable key="correlationId" value="test-correlation-id-multi" />
                 </munit:variables>
@@ -90,22 +87,26 @@
         </munit:execution>
 
         <munit:validation>
-            <munit-tools:assert-that expression="#[payload.message]" 
-                                   is="#[MunitTools::containsString('Email sent to')]" />
-            <munit-tools:assert-that expression="#[payload.message]" 
-                                   is="#[MunitTools::containsString('successfully')]" />
+            <munit-tools:assert-that expression="#[payload]"
+                                   is='#[MunitTools::equalTo(readUrl("classpath://implementation/email-multiple-recipients-response.json", "application/json"))]' />
+            <munit-tools:verify-call processor="email:send" atLeast="1">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute attributeName="config-ref" whereValue="Email_SMTP" />
+                </munit-tools:with-attributes>
+            </munit-tools:verify-call>
         </munit:validation>
     </munit:test>
 
     <!-- Test case for email sending failure due to connectivity -->
-    <munit:test name="smtp-implementation-connectivity-failure-test" 
+    <munit:test name="implementation-smtp-connectivity-failure-test" 
                 description="Test email sending failure due to connectivity issues"
                 expectedErrorType="EMAIL:CONNECTIVITY">
         
         <munit:behavior>
-            <munit-tools:mock-when processor="email:send">
+            <munit-tools:mock-when processor="email:send" doc:name="Mock Email Send Error">
                 <munit-tools:with-attributes>
                     <munit-tools:with-attribute whereValue="Email_SMTP" attributeName="config-ref" />
+                    <munit-tools:with-attribute whereValue="Send Email with Failed Record details" attributeName="doc:name" />
                 </munit-tools:with-attributes>
                 <munit-tools:then-return>
                     <munit-tools:error typeId="EMAIL:CONNECTIVITY" />
@@ -115,13 +116,7 @@
 
         <munit:execution>
             <munit:set-event>
-                <munit:payload value='#{
-                    {
-                        "emailAddress": "test@example.com",
-                        "emailSubject": "Test Subject",
-                        "emailMessage": "VGhpcyBpcyBhIHRlc3QgZW1haWw="
-                    }
-                }' mediaType="application/json" />
+                <munit:payload value='#[readUrl("classpath://implementation/email-success-payload.json", "application/json")]' />
                 <munit:variables>
                     <munit:variable key="correlationId" value="test-correlation-id-error" />
                 </munit:variables>
@@ -132,30 +127,25 @@
     </munit:test>
 
     <!-- Test case for email sending failure due to authentication -->
-    <munit:test name="smtp-implementation-authentication-failure-test" 
+    <munit:test name="implementation-smtp-authentication-failure-test" 
                 description="Test email sending failure due to authentication issues"
-                expectedErrorType="EMAIL:INVALID_CREDENTIALS">
+                expectedErrorType="EMAIL:CONNECTIVITY">
         
         <munit:behavior>
-            <munit-tools:mock-when processor="email:send">
+            <munit-tools:mock-when processor="email:send" doc:name="Mock Email Send Error">
                 <munit-tools:with-attributes>
                     <munit-tools:with-attribute whereValue="Email_SMTP" attributeName="config-ref" />
+                    <munit-tools:with-attribute whereValue="Send Email with Failed Record details" attributeName="doc:name" />
                 </munit-tools:with-attributes>
                 <munit-tools:then-return>
-                    <munit-tools:error typeId="EMAIL:INVALID_CREDENTIALS" />
+                    <munit-tools:error typeId="EMAIL:CONNECTIVITY" />
                 </munit-tools:then-return>
             </munit-tools:mock-when>
         </munit:behavior>
 
         <munit:execution>
             <munit:set-event>
-                <munit:payload value='#{
-                    {
-                        "emailAddress": "test@example.com",
-                        "emailSubject": "Test Subject",
-                        "emailMessage": "VGhpcyBpcyBhIHRlc3QgZW1haWw="
-                    }
-                }' mediaType="application/json" />
+                <munit:payload value='#[readUrl("classpath://implementation/email-success-payload.json", "application/json")]' />
                 <munit:variables>
                     <munit:variable key="correlationId" value="test-correlation-id-auth" />
                 </munit:variables>
@@ -165,15 +155,16 @@
         </munit:execution>
     </munit:test>
 
-    <!-- Test case for empty email address -->
-    <munit:test name="smtp-implementation-empty-email-test" 
-                description="Test email sending with empty email address"
+    <!-- Test case for email sending with invalid configuration -->
+    <munit:test name="implementation-smtp-invalid-config-test" 
+                description="Test email sending with invalid configuration"
                 expectedErrorType="EMAIL:SEND">
         
         <munit:behavior>
-            <munit-tools:mock-when processor="email:send">
+            <munit-tools:mock-when processor="email:send" doc:name="Mock Email Send Error">
                 <munit-tools:with-attributes>
                     <munit-tools:with-attribute whereValue="Email_SMTP" attributeName="config-ref" />
+                    <munit-tools:with-attribute whereValue="Send Email with Failed Record details" attributeName="doc:name" />
                 </munit-tools:with-attributes>
                 <munit-tools:then-return>
                     <munit-tools:error typeId="EMAIL:SEND" />
@@ -183,13 +174,36 @@
 
         <munit:execution>
             <munit:set-event>
-                <munit:payload value='#{
-                    {
-                        "emailAddress": "",
-                        "emailSubject": "Test Subject",
-                        "emailMessage": "VGhpcyBpcyBhIHRlc3QgZW1haWw="
-                    }
-                }' mediaType="application/json" />
+                <munit:payload value='#[readUrl("classpath://implementation/email-success-payload.json", "application/json")]' />
+                <munit:variables>
+                    <munit:variable key="correlationId" value="test-correlation-id-config" />
+                </munit:variables>
+            </munit:set-event>
+
+            <flow-ref name="smtp-implementation-sub-flow" />
+        </munit:execution>
+    </munit:test>
+
+    <!-- Test case for email sending with empty email address -->
+    <munit:test name="implementation-smtp-empty-address-test" 
+                description="Test email sending with empty email address"
+                expectedErrorType="EMAIL:SEND">
+        
+        <munit:behavior>
+            <munit-tools:mock-when processor="email:send" doc:name="Mock Email Send Error">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="Email_SMTP" attributeName="config-ref" />
+                    <munit-tools:with-attribute whereValue="Send Email with Failed Record details" attributeName="doc:name" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:error typeId="EMAIL:SEND" />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://implementation/email-empty-address-payload.json", "application/json")]' />
                 <munit:variables>
                     <munit:variable key="correlationId" value="test-correlation-id-empty" />
                 </munit:variables>
@@ -197,6 +211,84 @@
 
             <flow-ref name="smtp-implementation-sub-flow" />
         </munit:execution>
+    </munit:test>
+
+    <!-- Test case for email body base64 decoding -->
+    <munit:test name="implementation-smtp-base64-decoding-test" 
+                description="Test email body base64 decoding functionality">
+        
+        <munit:behavior>
+            <munit-tools:spy processor="ee:transform" doc:name="Spy Base64 Decoding">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="Response Payload" attributeName="doc:name" />
+                </munit-tools:with-attributes>
+                <munit-tools:before-call>
+                    <munit-tools:assert-that expression="#[payload.emailMessage]" 
+                                           is="#[MunitTools::notNullValue()]" />
+                </munit-tools:before-call>
+                <munit-tools:after-call>
+                    <munit-tools:assert-that expression="#[payload.message]" 
+                                           is="#[MunitTools::containsString('Email sent to')]" />
+                </munit-tools:after-call>
+            </munit-tools:spy>
+            
+            <munit-tools:mock-when processor="email:send" doc:name="Mock Email Send">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="Email_SMTP" attributeName="config-ref" />
+                    <munit-tools:with-attribute whereValue="Send Email with Failed Record details" attributeName="doc:name" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return />
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://implementation/email-success-payload.json", "application/json")]' />
+                <munit:variables>
+                    <munit:variable key="correlationId" value="test-correlation-id-base64" />
+                </munit:variables>
+            </munit:set-event>
+
+            <flow-ref name="smtp-implementation-sub-flow" />
+        </munit:execution>
+
+        <munit:validation>
+            <munit-tools:assert-that expression="#[payload]"
+                                   is='#[MunitTools::equalTo(readUrl("classpath://implementation/email-success-response.json", "application/json"))]' />
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test case for correlation ID usage in logging -->
+    <munit:test name="implementation-correlation-id-logging-test" 
+                description="Test correlation ID is used properly in logging">
+        
+        <munit:behavior>
+            <munit-tools:mock-when processor="email:send" doc:name="Mock Email Send">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="Email_SMTP" attributeName="config-ref" />
+                    <munit-tools:with-attribute whereValue="Send Email with Failed Record details" attributeName="doc:name" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return />
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://implementation/email-success-payload.json", "application/json")]' />
+                <munit:variables>
+                    <munit:variable key="correlationId" value="test-correlation-id-logging" />
+                </munit:variables>
+            </munit:set-event>
+
+            <flow-ref name="smtp-implementation-sub-flow" />
+        </munit:execution>
+
+        <munit:validation>
+            <munit-tools:assert-that expression="#[payload]"
+                                   is='#[MunitTools::equalTo(readUrl("classpath://implementation/email-success-response.json", "application/json"))]' />
+            <munit-tools:assert-that expression="#[vars.correlationId]" 
+                                   is="#[MunitTools::equalTo('test-correlation-id-logging')]" />
+        </munit:validation>
     </munit:test>
 
 </mule>

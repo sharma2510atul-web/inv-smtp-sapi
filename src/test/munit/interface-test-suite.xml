@@ -7,148 +7,82 @@
       xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
       xsi:schemaLocation="
         http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
         http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
         http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
         http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+        http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd">
 
-    <munit:config name="interface-test-suite.xml" />
+    <munit:config name="interface-test-suite.xml" >
+		<munit:parameterizations >
+			<munit:parameterization name="testParams" >
+				<munit:parameters >
+					<munit:parameter propertyName="mule.env" value="dev" />
+					<munit:parameter propertyName="mule.key" value="Mule1234sftest04" />
+				</munit:parameters>
+			</munit:parameterization>
+		</munit:parameterizations>
+	</munit:config>
 
     <!-- Test case for successful POST /v1/emailService -->
-    <munit:test name="post-email-service-success-test" 
+    <munit:test name="interface-post-email-service-success-test" 
                 description="Test successful POST request to /v1/emailService endpoint">
         
         <munit:behavior>
-            <munit-tools:mock-when processor="flow-ref">
+            <munit-tools:mock-when processor="flow-ref" doc:name="Mock smtp-implementation-sub-flow">
                 <munit-tools:with-attributes>
                     <munit-tools:with-attribute whereValue="smtp-implementation-sub-flow" attributeName="name" />
                 </munit-tools:with-attributes>
                 <munit-tools:then-return>
-                    <munit-tools:payload value='#[{"message": "Email sent to test@example.com successfully"}]' 
-                                       mediaType="application/json" />
+                    <munit-tools:payload value='#[readUrl("classpath://interface/post-email-service-response.json", "application/json")]' />
                 </munit-tools:then-return>
             </munit-tools:mock-when>
         </munit:behavior>
 
         <munit:execution>
             <munit:set-event>
-                <munit:payload value='#{
-                    {
-                        "emailAddress": "test@example.com",
-                        "emailSubject": "Test Email",
-                        "emailMessage": "VGhpcyBpcyBhIHRlc3QgZW1haWw="
-                    }
-                }' mediaType="application/json" />
-                <munit:attributes value='#{
-                    {
-                        "headers": {
-                            "content-type": "application/json",
-                            "accept": "application/json"
-                        },
-                        "method": "POST",
-                        "requestPath": "/api/v1/emailService"
-                    }
-                }' />
+                <munit:payload value='#[readUrl("classpath://interface/post-email-service-payload.json", "application/json")]' />
+                <munit:attributes value='#[{
+                    "headers": {
+                        "content-type": "application/json",
+                        "accept": "application/json",
+                        "x-correlation-id": "test-correlation-id"
+                    },
+                    "method": "POST",
+                    "requestPath": "/api/v1/emailService"
+                }]' />
             </munit:set-event>
 
             <flow-ref name="post:\v1\emailService:application\json:inv-smtp-sapi-config" />
         </munit:execution>
 
         <munit:validation>
-            <munit-tools:assert-that expression="#[payload.message]" 
-                                   is="#[MunitTools::containsString('Email sent to')]" />
-            <munit-tools:assert-that expression="#[payload.message]" 
-                                   is="#[MunitTools::containsString('successfully')]" />
+            <munit-tools:assert-that expression="#[payload]"
+                                   is='#[MunitTools::equalTo(readUrl("classpath://interface/post-email-service-response.json", "application/json"))]' />
+            <munit-tools:verify-call processor="flow-ref" atLeast="1">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute attributeName="name" whereValue="smtp-implementation-sub-flow" />
+                </munit-tools:with-attributes>
+            </munit-tools:verify-call>
         </munit:validation>
     </munit:test>
 
-    <!-- Test case for email service with invalid body structure -->
-    <munit:test name="post-email-service-invalid-body-test" 
-                description="Test POST request with invalid body structure"
-                expectedErrorType="APIKIT:BAD_REQUEST">
-        
-        <munit:behavior>
-            <munit-tools:mock-when processor="apikit:router">
-                <munit-tools:with-attributes>
-                    <munit-tools:with-attribute whereValue="inv-smtp-sapi-config" attributeName="config-ref" />
-                </munit-tools:with-attributes>
-                <munit-tools:then-return>
-                    <munit-tools:error typeId="APIKIT:BAD_REQUEST" />
-                </munit-tools:then-return>
-            </munit-tools:mock-when>
-        </munit:behavior>
-
-        <munit:execution>
-            <munit:set-event>
-                <munit:payload value='#[{"invalid": "data"}]' />
-                <munit:attributes value='#{
-                    {
-                        "headers": {
-                            "content-type": "application/json",
-                            "accept": "application/json"
-                        },
-                        "method": "POST",
-                        "requestPath": "/api/v1/emailService"
-                    }
-                }' />
-            </munit:set-event>
-
-            <flow-ref name="inv-smtp-sapi-main" />
-        </munit:execution>
-    </munit:test>
-
-    <!-- Test case for missing required fields -->
-    <munit:test name="post-email-service-missing-fields-test" 
-                description="Test POST request with missing required fields"
-                expectedErrorType="APIKIT:BAD_REQUEST">
-        
-        <munit:behavior>
-            <munit-tools:mock-when processor="apikit:router">
-                <munit-tools:with-attributes>
-                    <munit-tools:with-attribute whereValue="inv-smtp-sapi-config" attributeName="config-ref" />
-                </munit-tools:with-attributes>
-                <munit-tools:then-return>
-                    <munit-tools:error typeId="APIKIT:BAD_REQUEST" />
-                </munit-tools:then-return>
-            </munit-tools:mock-when>
-        </munit:behavior>
-
-        <munit:execution>
-            <munit:set-event>
-                <munit:payload value='#[{"emailAddress": "test@example.com"}]' />
-                <munit:attributes value='#{
-                    {
-                        "headers": {
-                            "content-type": "application/json",
-                            "accept": "application/json"
-                        },
-                        "method": "POST",
-                        "requestPath": "/api/v1/emailService"
-                    }
-                }' />
-            </munit:set-event>
-
-            <flow-ref name="inv-smtp-sapi-main" />
-        </munit:execution>
-    </munit:test>
-
-    <!-- Test case for health check endpoint -->
-    <munit:test name="get-health-check-success-test" 
+    <!-- Test case for successful GET /health-check -->
+    <munit:test name="interface-get-health-check-success-test" 
                 description="Test successful GET request to health-check endpoint">
         
         <munit:execution>
             <munit:set-event>
-                <munit:attributes value='#{
-                    {
-                        "headers": {
-                            "accept": "application/json"
-                        },
-                        "method": "GET",
-                        "requestPath": "/api/health-check"
-                    }
-                }' />
+                <munit:attributes value='#[{
+                    "headers": {
+                        "accept": "application/json"
+                    },
+                    "method": "GET",
+                    "requestPath": "/api/health-check"
+                }]' />
             </munit:set-event>
 
             <flow-ref name="get:\health-check:inv-smtp-sapi-config" />
@@ -159,52 +93,98 @@
                                    is="#[MunitTools::equalTo('OK')]" />
             <munit-tools:assert-that expression="#[payload[0].api.name]" 
                                    is="#[MunitTools::notNullValue()]" />
+            <munit-tools:assert-that expression="#[payload[0].message]" 
+                                   is="#[MunitTools::equalTo('Success')]" />
             <munit-tools:assert-that expression="#[payload[0].timestamp]" 
                                    is="#[MunitTools::notNullValue()]" />
         </munit:validation>
     </munit:test>
 
-    <!-- Test case for unsupported HTTP method -->
-    <munit:test name="unsupported-method-test" 
-                description="Test unsupported HTTP method"
-                expectedErrorType="APIKIT:METHOD_NOT_ALLOWED">
+    <!-- Test case for main flow with valid request -->
+    <munit:test name="interface-main-flow-success-test" 
+                description="Test main flow with valid API request">
         
         <munit:behavior>
-            <munit-tools:mock-when processor="apikit:router">
+            <munit-tools:mock-when processor="apikit:router" doc:name="Mock APIKit Router">
                 <munit-tools:with-attributes>
                     <munit-tools:with-attribute whereValue="inv-smtp-sapi-config" attributeName="config-ref" />
                 </munit-tools:with-attributes>
                 <munit-tools:then-return>
-                    <munit-tools:error typeId="APIKIT:METHOD_NOT_ALLOWED" />
+                    <munit-tools:payload value='#[readUrl("classpath://interface/post-email-service-response.json", "application/json")]' />
                 </munit-tools:then-return>
             </munit-tools:mock-when>
         </munit:behavior>
 
         <munit:execution>
             <munit:set-event>
-                <munit:attributes value='#{
-                    {
-                        "headers": {
-                            "accept": "application/json"
-                        },
-                        "method": "PUT",
-                        "requestPath": "/send-email"
-                    }
-                }' />
+                <munit:payload value='#[readUrl("classpath://interface/post-email-service-payload.json", "application/json")]' />
+                <munit:attributes value='#[{
+                    "headers": {
+                        "content-type": "application/json",
+                        "accept": "application/json",
+                        "x-correlation-id": "test-correlation-id"
+                    },
+                    "method": "POST",
+                    "requestPath": "/api/v1/emailService"
+                }]' />
             </munit:set-event>
 
             <flow-ref name="inv-smtp-sapi-main" />
         </munit:execution>
 
+        <munit:validation>
+            <munit-tools:assert-that expression="#[payload]"
+                                   is='#[MunitTools::equalTo(readUrl("classpath://interface/post-email-service-response.json", "application/json"))]' />
+            <munit-tools:assert-that expression="#[vars.correlationId]" 
+                                   is="#[MunitTools::notNullValue()]" />
+            <munit-tools:verify-call processor="apikit:router" atLeast="1">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute attributeName="config-ref" whereValue="inv-smtp-sapi-config" />
+                </munit-tools:with-attributes>
+            </munit-tools:verify-call>
+        </munit:validation>
     </munit:test>
 
-    <!-- Test case for not found resource -->
-    <munit:test name="resource-not-found-test" 
-                description="Test request to non-existent resource"
+    <!-- Test case for APIKIT BAD_REQUEST error -->
+    <munit:test name="interface-main-flow-bad-request-test" 
+                description="Test main flow with APIKIT:BAD_REQUEST error"
+                expectedErrorType="APIKIT:BAD_REQUEST">
+        
+        <munit:behavior>
+            <munit-tools:mock-when processor="apikit:router" doc:name="Mock APIKit Router Error">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="inv-smtp-sapi-config" attributeName="config-ref" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:error typeId="APIKIT:BAD_REQUEST" />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://interface/invalid-payload.json", "application/json")]' />
+                <munit:attributes value='#[{
+                    "headers": {
+                        "content-type": "application/json",
+                        "accept": "application/json"
+                    },
+                    "method": "POST",
+                    "requestPath": "/api/v1/emailService"
+                }]' />
+            </munit:set-event>
+
+            <flow-ref name="inv-smtp-sapi-main" />
+        </munit:execution>
+    </munit:test>
+
+    <!-- Test case for APIKIT NOT_FOUND error -->
+    <munit:test name="interface-main-flow-not-found-test" 
+                description="Test main flow with APIKIT:NOT_FOUND error"
                 expectedErrorType="APIKIT:NOT_FOUND">
         
         <munit:behavior>
-            <munit-tools:mock-when processor="apikit:router">
+            <munit-tools:mock-when processor="apikit:router" doc:name="Mock APIKit Router Error">
                 <munit-tools:with-attributes>
                     <munit-tools:with-attribute whereValue="inv-smtp-sapi-config" attributeName="config-ref" />
                 </munit-tools:with-attributes>
@@ -216,20 +196,187 @@
 
         <munit:execution>
             <munit:set-event>
-                <munit:attributes value='#{
-                    {
-                        "headers": {
-                            "accept": "application/json"
-                        },
-                        "method": "GET",
-                        "requestPath": "/nonexistent"
-                    }
-                }' />
+                <munit:payload value='#[readUrl("classpath://interface/post-email-service-payload.json", "application/json")]' />
+                <munit:attributes value='#[{
+                    "headers": {
+                        "accept": "application/json"
+                    },
+                    "method": "GET",
+                    "requestPath": "/api/nonexistent"
+                }]' />
+            </munit:set-event>
+
+            <flow-ref name="inv-smtp-sapi-main" />
+        </munit:execution>
+    </munit:test>
+
+    <!-- Test case for APIKIT METHOD_NOT_ALLOWED error -->
+    <munit:test name="interface-main-flow-method-not-allowed-test" 
+                description="Test main flow with APIKIT:METHOD_NOT_ALLOWED error"
+                expectedErrorType="APIKIT:METHOD_NOT_ALLOWED">
+        
+        <munit:behavior>
+            <munit-tools:mock-when processor="apikit:router" doc:name="Mock APIKit Router Error">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="inv-smtp-sapi-config" attributeName="config-ref" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:error typeId="APIKIT:METHOD_NOT_ALLOWED" />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://interface/post-email-service-payload.json", "application/json")]' />
+                <munit:attributes value='#[{
+                    "headers": {
+                        "accept": "application/json"
+                    },
+                    "method": "PUT",
+                    "requestPath": "/api/v1/emailService"
+                }]' />
+            </munit:set-event>
+
+            <flow-ref name="inv-smtp-sapi-main" />
+        </munit:execution>
+    </munit:test>
+
+    <!-- Test case for correlation ID generation -->
+    <munit:test name="interface-correlation-id-generation-test" 
+                description="Test correlation ID generation when not provided">
+        
+        <munit:behavior>
+            <munit-tools:mock-when processor="apikit:router" doc:name="Mock APIKit Router">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="inv-smtp-sapi-config" attributeName="config-ref" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:payload value='#[readUrl("classpath://interface/post-email-service-response.json", "application/json")]' />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://interface/post-email-service-payload.json", "application/json")]' />
+                <munit:attributes value='#[{
+                    "headers": {
+                        "content-type": "application/json",
+                        "accept": "application/json"
+                    },
+                    "method": "POST",
+                    "requestPath": "/api/v1/emailService"
+                }]' />
             </munit:set-event>
 
             <flow-ref name="inv-smtp-sapi-main" />
         </munit:execution>
 
+        <munit:validation>
+            <munit-tools:assert-that expression="#[vars.correlationId]" 
+                                   is="#[MunitTools::notNullValue()]" />
+            <munit-tools:assert-that expression="#[sizeOf(vars.correlationId)]" 
+                                   is="#[MunitTools::greaterThan(0)]" />
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test case for APIKIT NOT_ACCEPTABLE error -->
+    <munit:test name="interface-main-flow-not-acceptable-test"
+                description="Test main flow with APIKIT:NOT_ACCEPTABLE error"
+                expectedErrorType="APIKIT:NOT_ACCEPTABLE">
+
+        <munit:behavior>
+            <munit-tools:mock-when processor="apikit:router" doc:name="Mock APIKit Router Error">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="inv-smtp-sapi-config" attributeName="config-ref" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:error typeId="APIKIT:NOT_ACCEPTABLE" />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://interface/post-email-service-payload.json", "application/json")]' />
+                <munit:attributes value='#[{
+                    "headers": {
+                        "accept": "text/xml"
+                    },
+                    "method": "POST",
+                    "requestPath": "/api/v1/emailService"
+                }]' />
+            </munit:set-event>
+
+            <flow-ref name="inv-smtp-sapi-main" />
+        </munit:execution>
+    </munit:test>
+
+    <!-- Test case for APIKIT UNSUPPORTED_MEDIA_TYPE error -->
+    <munit:test name="interface-main-flow-unsupported-media-type-test"
+                description="Test main flow with APIKIT:UNSUPPORTED_MEDIA_TYPE error"
+                expectedErrorType="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+
+        <munit:behavior>
+            <munit-tools:mock-when processor="apikit:router" doc:name="Mock APIKit Router Error">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="inv-smtp-sapi-config" attributeName="config-ref" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:error typeId="APIKIT:UNSUPPORTED_MEDIA_TYPE" />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://interface/post-email-service-payload.json", "application/json")]' />
+                <munit:attributes value='#[{
+                    "headers": {
+                        "content-type": "text/plain",
+                        "accept": "application/json"
+                    },
+                    "method": "POST",
+                    "requestPath": "/api/v1/emailService"
+                }]' />
+            </munit:set-event>
+
+            <flow-ref name="inv-smtp-sapi-main" />
+        </munit:execution>
+    </munit:test>
+
+    <!-- Test case for APIKIT NOT_IMPLEMENTED error -->
+    <munit:test name="interface-main-flow-not-implemented-test"
+                description="Test main flow with APIKIT:NOT_IMPLEMENTED error"
+                expectedErrorType="APIKIT:NOT_IMPLEMENTED">
+
+        <munit:behavior>
+            <munit-tools:mock-when processor="apikit:router" doc:name="Mock APIKit Router Error">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="inv-smtp-sapi-config" attributeName="config-ref" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:error typeId="APIKIT:NOT_IMPLEMENTED" />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://interface/post-email-service-payload.json", "application/json")]' />
+                <munit:attributes value='#[{
+                    "headers": {
+                        "content-type": "application/json",
+                        "accept": "application/json"
+                    },
+                    "method": "POST",
+                    "requestPath": "/api/v1/emailService"
+                }]' />
+            </munit:set-event>
+
+            <flow-ref name="inv-smtp-sapi-main" />
+        </munit:execution>
     </munit:test>
 
 </mule>

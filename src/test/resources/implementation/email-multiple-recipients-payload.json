@@ -1,0 +1,5 @@
+{
+  "emailAddress": "test1@example.com,test2@example.com",
+  "emailSubject": "Test Subject Multiple Recipients",
+  "emailMessage": "VGhpcyBpcyBhIHRlc3QgZW1haWwgZm9yIG11bHRpcGxlIHJlY2lwaWVudHM="
+}
