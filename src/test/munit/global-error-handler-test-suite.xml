@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+      xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+        http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <munit:config name="global-error-handler-test-suite.xml" >
+		<munit:parameterizations >
+			<munit:parameterization name="testParams" >
+				<munit:parameters >
+					<munit:parameter propertyName="mule.env" value="dev" />
+					<munit:parameter propertyName="mule.key" value="Mule1234sftest04" />
+				</munit:parameters>
+			</munit:parameterization>
+		</munit:parameterizations>
+	</munit:config>
+
+    <!-- Test case for APIKIT BAD_REQUEST error handling -->
+    <munit:test name="global-error-handler-bad-request-test" 
+                description="Test global error handler for APIKIT:BAD_REQUEST errors">
+        
+        <munit:behavior>
+            <munit-tools:mock-when processor="flow-ref" doc:name="Mock error-response-sub-flow">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="error-response-sub-flow" attributeName="name" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:payload value='#[readUrl("classpath://global-error-handler/error-response-bad-request.json", "application/json")]' />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://global-error-handler/test-payload.json", "application/json")]' />
+                <munit:variables>
+                    <munit:variable key="correlationId" value="test-correlation-id" />
+                </munit:variables>
+            </munit:set-event>
+            
+            <set-variable variableName="httpStatus" value="400" />
+            <flow-ref name="error-response-sub-flow" />
+        </munit:execution>
+
+        <munit:validation>
+            <munit-tools:assert-that expression="#[payload.statusCode]" 
+                                   is="#[MunitTools::equalTo(400)]" />
+            <munit-tools:assert-that expression="#[payload.response]" 
+                                   is="#[MunitTools::equalTo('Error')]" />
+            <munit-tools:assert-that expression="#[payload.errorType]" 
+                                   is="#[MunitTools::equalTo('APIKIT:BAD_REQUEST')]" />
+            <munit-tools:assert-that expression="#[payload.correlationId]" 
+                                   is="#[MunitTools::equalTo('test-correlation-id')]" />
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test case for APIKIT NOT_FOUND error handling -->
+    <munit:test name="global-error-handler-not-found-test" 
+                description="Test global error handler for APIKIT:NOT_FOUND errors">
+        
+        <munit:behavior>
+            <munit-tools:mock-when processor="flow-ref" doc:name="Mock error-response-sub-flow">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="error-response-sub-flow" attributeName="name" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:payload value='#[readUrl("classpath://global-error-handler/error-response-not-found.json", "application/json")]' />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://global-error-handler/test-payload.json", "application/json")]' />
+                <munit:variables>
+                    <munit:variable key="correlationId" value="test-correlation-id" />
+                </munit:variables>
+            </munit:set-event>
+            
+            <set-variable variableName="httpStatus" value="404" />
+            <flow-ref name="error-response-sub-flow" />
+        </munit:execution>
+
+        <munit:validation>
+            <munit-tools:assert-that expression="#[payload.statusCode]" 
+                                   is="#[MunitTools::equalTo(404)]" />
+            <munit-tools:assert-that expression="#[payload.response]" 
+                                   is="#[MunitTools::equalTo('Error')]" />
+            <munit-tools:assert-that expression="#[payload.errorType]" 
+                                   is="#[MunitTools::equalTo('APIKIT:NOT_FOUND')]" />
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test case for APIKIT METHOD_NOT_ALLOWED error handling -->
+    <munit:test name="global-error-handler-method-not-allowed-test" 
+                description="Test global error handler for APIKIT:METHOD_NOT_ALLOWED errors">
+        
+        <munit:behavior>
+            <munit-tools:mock-when processor="flow-ref" doc:name="Mock error-response-sub-flow">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="error-response-sub-flow" attributeName="name" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:payload value='#[readUrl("classpath://global-error-handler/error-response-method-not-allowed.json", "application/json")]' />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://global-error-handler/test-payload.json", "application/json")]' />
+                <munit:variables>
+                    <munit:variable key="correlationId" value="test-correlation-id" />
+                </munit:variables>
+            </munit:set-event>
+            
+            <set-variable variableName="httpStatus" value="405" />
+            <flow-ref name="error-response-sub-flow" />
+        </munit:execution>
+
+        <munit:validation>
+            <munit-tools:assert-that expression="#[payload.statusCode]" 
+                                   is="#[MunitTools::equalTo(405)]" />
+            <munit-tools:assert-that expression="#[payload.response]" 
+                                   is="#[MunitTools::equalTo('Error')]" />
+            <munit-tools:assert-that expression="#[payload.errorType]" 
+                                   is="#[MunitTools::equalTo('APIKIT:METHOD_NOT_ALLOWED')]" />
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test case for APIKIT NOT_ACCEPTABLE error handling -->
+    <munit:test name="global-error-handler-not-acceptable-test" 
+                description="Test global error handler for APIKIT:NOT_ACCEPTABLE errors">
+        
+        <munit:behavior>
+            <munit-tools:mock-when processor="flow-ref" doc:name="Mock error-response-sub-flow">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="error-response-sub-flow" attributeName="name" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:payload value='#[readUrl("classpath://global-error-handler/error-response-not-acceptable.json", "application/json")]' />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://global-error-handler/test-payload.json", "application/json")]' />
+                <munit:variables>
+                    <munit:variable key="correlationId" value="test-correlation-id" />
+                </munit:variables>
+            </munit:set-event>
+            
+            <set-variable variableName="httpStatus" value="406" />
+            <flow-ref name="error-response-sub-flow" />
+        </munit:execution>
+
+        <munit:validation>
+            <munit-tools:assert-that expression="#[payload.statusCode]" 
+                                   is="#[MunitTools::equalTo(406)]" />
+            <munit-tools:assert-that expression="#[payload.response]" 
+                                   is="#[MunitTools::equalTo('Error')]" />
+            <munit-tools:assert-that expression="#[payload.errorType]" 
+                                   is="#[MunitTools::equalTo('APIKIT:NOT_ACCEPTABLE')]" />
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test case for APIKIT UNSUPPORTED_MEDIA_TYPE error handling -->
+    <munit:test name="global-error-handler-unsupported-media-type-test" 
+                description="Test global error handler for APIKIT:UNSUPPORTED_MEDIA_TYPE errors">
+        
+        <munit:behavior>
+            <munit-tools:mock-when processor="flow-ref" doc:name="Mock error-response-sub-flow">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="error-response-sub-flow" attributeName="name" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:payload value='#[readUrl("classpath://global-error-handler/error-response-unsupported-media-type.json", "application/json")]' />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://global-error-handler/test-payload.json", "application/json")]' />
+                <munit:variables>
+                    <munit:variable key="correlationId" value="test-correlation-id" />
+                </munit:variables>
+            </munit:set-event>
+            
+            <set-variable variableName="httpStatus" value="415" />
+            <flow-ref name="error-response-sub-flow" />
+        </munit:execution>
+
+        <munit:validation>
+            <munit-tools:assert-that expression="#[payload.statusCode]" 
+                                   is="#[MunitTools::equalTo(415)]" />
+            <munit-tools:assert-that expression="#[payload.response]" 
+                                   is="#[MunitTools::equalTo('Error')]" />
+            <munit-tools:assert-that expression="#[payload.errorType]" 
+                                   is="#[MunitTools::equalTo('APIKIT:UNSUPPORTED_MEDIA_TYPE')]" />
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test case for APIKIT NOT_IMPLEMENTED error handling -->
+    <munit:test name="global-error-handler-not-implemented-test" 
+                description="Test global error handler for APIKIT:NOT_IMPLEMENTED errors">
+        
+        <munit:behavior>
+            <munit-tools:mock-when processor="flow-ref" doc:name="Mock error-response-sub-flow">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="error-response-sub-flow" attributeName="name" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:payload value='#[readUrl("classpath://global-error-handler/error-response-not-implemented.json", "application/json")]' />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://global-error-handler/test-payload.json", "application/json")]' />
+                <munit:variables>
+                    <munit:variable key="correlationId" value="test-correlation-id" />
+                </munit:variables>
+            </munit:set-event>
+            
+            <set-variable variableName="httpStatus" value="501" />
+            <flow-ref name="error-response-sub-flow" />
+        </munit:execution>
+
+        <munit:validation>
+            <munit-tools:assert-that expression="#[payload.statusCode]" 
+                                   is="#[MunitTools::equalTo(501)]" />
+            <munit-tools:assert-that expression="#[payload.response]" 
+                                   is="#[MunitTools::equalTo('Error')]" />
+            <munit-tools:assert-that expression="#[payload.errorType]" 
+                                   is="#[MunitTools::equalTo('APIKIT:NOT_IMPLEMENTED')]" />
+        </munit:validation>
+    </munit:test>
+
+    <!-- Test case for ANY error handling (catch-all) -->
+    <munit:test name="global-error-handler-any-error-test" 
+                description="Test global error handler for any unhandled errors">
+        
+        <munit:behavior>
+            <munit-tools:mock-when processor="flow-ref" doc:name="Mock error-response-sub-flow">
+                <munit-tools:with-attributes>
+                    <munit-tools:with-attribute whereValue="error-response-sub-flow" attributeName="name" />
+                </munit-tools:with-attributes>
+                <munit-tools:then-return>
+                    <munit-tools:payload value='#[readUrl("classpath://global-error-handler/error-response-any-error.json", "application/json")]' />
+                </munit-tools:then-return>
+            </munit-tools:mock-when>
+        </munit:behavior>
+
+        <munit:execution>
+            <munit:set-event>
+                <munit:payload value='#[readUrl("classpath://global-error-handler/test-payload.json", "application/json")]' />
+                <munit:variables>
+                    <munit:variable key="correlationId" value="test-correlation-id" />
+                </munit:variables>
+            </munit:set-event>
+            
+            <set-variable variableName="httpStatus" value="500" />
+            <flow-ref name="error-response-sub-flow" />
+        </munit:execution>
+
+        <munit:validation>
+            <munit-tools:assert-that expression="#[payload.statusCode]" 
+                                   is="#[MunitTools::equalTo(500)]" />
+            <munit-tools:assert-that expression="#[payload.response]" 
+                                   is="#[MunitTools::equalTo('Error')]" />
+            <munit-tools:assert-that expression="#[payload.errorType]" 
+                                   is="#[MunitTools::equalTo('MULE:UNKNOWN')]" />
+        </munit:validation>
+    </munit:test>
+
+</mule>

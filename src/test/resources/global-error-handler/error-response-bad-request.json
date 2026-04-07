@@ -1,0 +1,10 @@
+{
+  "api": "inventory-smtp-sapi",
+  "env": "test",
+  "response": "Error",
+  "statusCode": 400,
+  "timestamp": "2024-04-06T18:42:00.000Z",
+  "correlationId": "test-correlation-id",
+  "errorType": "APIKIT:BAD_REQUEST",
+  "errorMessage": "Bad request"
+}
